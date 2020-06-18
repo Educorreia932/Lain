@@ -1,7 +1,8 @@
 import collections
 import discord
-import time
+import random
 import requests
+import time
 
 from discord.ext import commands
 
@@ -20,16 +21,16 @@ async def on_ready():
     
 @bot.command()
 async def info(ctx):
-    embed = discord.Embed(title="nice bot", description="Nicest bot there is ever.", color=0xeee657)
+    embed = discord.Embed(title="Nicest teacher there is ever.", description="You should be studying.", color=0xeee657)
 
     # give info about you here
-    embed.add_field(name = "Author", value = "Skelozard")
+    embed.add_field(name = "Author", value = "Skelozard/Raymag")
 
     # Shows the number of servers the bot is member of.
     embed.add_field(name = "Server count", value = f"{len(bot.guilds)}")
 
     # give users a link to invite thsi bot to their server
-    embed.add_field(name = "Invite", value = "[Invite link](<insert your OAuth invitation link here>)")
+    embed.add_field(name = "Invite", value = "https://discord.com/oauth2/authorize?client_id=723158683491762276&permissions=0&scope=bot")
 
     await ctx.send(embed = embed)
 
@@ -102,11 +103,15 @@ async def what(ctx, word):
     
     try:
         if len(query["list"]) > 0:
-            await ctx.send("**{}**:\n\n{}".format(word, query["list"][0]["definition"]).replace("[","*").replace("]","*"))
+            await ctx.send("**{}**:\n\n{}".format(word.title(), query["list"][0]["definition"]).replace("[","__").replace("]","__"))
             
         else:
             await ctx.send("Sorry, I don't know the meaning of this term.")
     except:
         print("I'm not very well today :c")
-        
+   
+@bot.command()
+async def iq(ctx):
+    await ctx.send("You have a total IQ of " + str(random.randint(1, 201)))
+   
 bot.run(TOKEN)
