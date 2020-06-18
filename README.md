@@ -18,7 +18,8 @@ All the commands must be preceded by the prefix `$`
 - **stats** - Retrieves statistics about the server
     - **emojis** - Total number of usages of each emoji in messages reactions
     - **messages** - Total number of messages per person
-- **what** - Get's the definition of a word from Urban Dictionary
+- **what [word]** - Get's the definition of a word from Urban Dictionary. You don't need the []
+- **joke** - Tells a nerdy joke
 
 ## Contribution
 
