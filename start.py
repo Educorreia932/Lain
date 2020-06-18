@@ -20,6 +20,22 @@ async def on_ready():
     print('------')
     
 @bot.command()
+async def commands(ctx):
+    commands = """
+** List of Commands **\n 
+All the commands must be preceded by the prefix `$`
+
+- **commands** - Lists all commands of the bot
+- **info** - Display information about the bot
+- **stats** - Retrieves statistics about the server
+    - **emojis** - Total number of usages of each emoji in messages reactions
+    - **messages** - Total number of messages per person
+- **what [word]** - Get's the definition of a word from Urban Dictionary. You don't need the []
+- **joke** - Tells a nerdy joke
+    """
+    await ctx.send(commands)
+
+@bot.command()
 async def info(ctx):
     embed = discord.Embed(title="Nicest teacher there is ever.", description="You should be studying.", color=0xeee657)
 
