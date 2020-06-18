@@ -1,6 +1,7 @@
 import collections
 import discord
 import time
+import requests
 
 from discord.ext import commands
 
@@ -93,5 +94,16 @@ async def stats(ctx, mode, display_time):
     
     if (display_time == "-time"):
         await ctx.send("Stats completed in " + str(total_time) + " seconds")
-    
+
+@bot.command()
+async def what(ctx, word):
+    query = requests.get('http://api.urbandictionary.com/v0/define?term='+word)
+    query = query.json()
+    try:
+        if len(query["list"]) > 0:
+            await ctx.send("{}:\n{}".format(word, query["list"][0]["definition"]))
+        else:
+            await ctx.send("Sorry, I don't know the meaning of this term.")
+    except:
+        print("I'm not very well today :c")
 bot.run(TOKEN)
