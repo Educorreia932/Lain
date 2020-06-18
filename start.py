@@ -114,4 +114,13 @@ async def what(ctx, word):
 async def iq(ctx):
     await ctx.send("You have a total IQ of " + str(random.randint(1, 201)))
    
+@bot.command()
+async def joke(ctx):
+    try:
+        query = requests.get("https://sv443.net/jokeapi/v2/joke/Miscellaneous?blacklistFlags=nsfw,religious,political,racist,sexist&type=single")
+        query = query.json()
+        await ctx.send(query["joke"])
+    except:
+        await ctx.send("I'm not in the mood for jokes today.")
+
 bot.run(TOKEN)
