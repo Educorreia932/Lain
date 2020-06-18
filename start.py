@@ -97,13 +97,16 @@ async def stats(ctx, mode, display_time):
 
 @bot.command()
 async def what(ctx, word):
-    query = requests.get('http://api.urbandictionary.com/v0/define?term='+word)
+    query = requests.get('http://api.urbandictionary.com/v0/define?term=' + word)
     query = query.json()
+    
     try:
         if len(query["list"]) > 0:
-            await ctx.send("{}:\n{}".format(word, query["list"][0]["definition"]))
+            await ctx.send("**{}**:\n\n{}".format(word, query["list"][0]["definition"]).replace("[","*").replace("]","*"))
+            
         else:
             await ctx.send("Sorry, I don't know the meaning of this term.")
     except:
         print("I'm not very well today :c")
+        
 bot.run(TOKEN)
