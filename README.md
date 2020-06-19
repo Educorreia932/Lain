@@ -15,7 +15,7 @@ Simply run `start.py` and have a `token.txt` file in the same folder, containing
 All the commands must be preceded by the prefix `$` 
 
 - **info** - Display information about the bot
-- **commands** - Lists all commands of the bot
+- **cmds** - Lists all commands of the bot
 - **stats** - Retrieves statistics about the server
     - **emojis** - Total number of usages of each emoji in messages reactions
     - **messages** - Total number of messages per person
