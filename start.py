@@ -119,7 +119,13 @@ async def what(ctx, word):
     
     try:
         if len(query["list"]) > 0:
-            await ctx.send("**{}**:\n\n{}".format(word.title(), query["list"][0]["definition"]).replace("[","__").replace("]","__"))
+            embed = discord.Embed(
+                title="**{}**".format(word.title()),
+                description=query["list"][0]["definition"].replace("[","__").replace("]","__"),
+                color=0xeee657
+            )
+
+            await ctx.send(embed=embed)
             
         else:
             await ctx.send("Sorry, I don't know the meaning of this term.")
