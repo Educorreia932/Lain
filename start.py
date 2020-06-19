@@ -45,13 +45,13 @@ All the commands must be preceded by the prefix `$`
 async def info(ctx):
     embed = discord.Embed(title="Nicest teacher there is ever.", description="You should be studying.", color=0xeee657)
 
-    # give info about you here
+    # Give info about you here
     embed.add_field(name = "Author", value = "Skelozard/Raymag")
 
     # Shows the number of servers the bot is member of.
     embed.add_field(name = "Server count", value = f"{len(bot.guilds)}")
 
-    # give users a link to invite thsi bot to their server
+    # Give users a link to invite thsi bot to their server
     embed.add_field(name = "Invite", value = "https://discord.com/oauth2/authorize?client_id=723158683491762276&permissions=0&scope=bot")
 
     await ctx.send(embed = embed)
@@ -158,6 +158,7 @@ async def iq(ctx):
         title = "You have a total IQ of " + str(random.randint(1, 201)),
         color = 0xeee657
     )
+    
     await ctx.send(embed = embed)
    
 @bot.command()
@@ -172,11 +173,13 @@ async def joke(ctx):
             color = 0xeee657
         )
         await ctx.send(embed = embed)
+        
     except:
         embed = discord.Embed(
                 title = "I'm not feeling well today, please call the dev :(",
                 color = 0xeee657
         )
+        
         await ctx.send(embed = embed)
 
 @bot.command()
@@ -192,11 +195,47 @@ async def excuse(ctx):
             color = 0xeee657
         )
         await ctx.send(embed = embed)
+        
     except:
         embed = discord.Embed(
-                title = "I'm not feeling well today, please call the dev :(",
-                color = 0xeee657
+            title = "I'm not feeling well today, please call the dev :(",
+            color = 0xeee657
         )
+        
+        await ctx.send(embed = embed)
+        
+@bot.command()
+async def study(ctx, command, subject, title, description = ""):
+    if command == "request" or command == "submit":
+        subjects = {
+                "Maths": "📐",
+                "Physics": "🌌",
+                "Chemistry": "🧪",
+                "Computers": "🖥️",
+                "Literature": "📚",
+                "Philosophy": "🧠",
+                "Biology": "🧬",
+                "Economics": "💰",
+                "Language": "🗣️",
+                "History": "⚱",
+                "Geography": "🌍" 
+            }
+        
+        subject = subject.title()
+        
+        message = \
+            "**Subject:** " + subject + " " + subjects[subject] + "\n" \
+            "**Title**: " + title
+        
+        if (description != ""):
+            message += "**Description**: " + description
+        
+        embed = discord.Embed(
+                title = "New " + command.title(),
+                description = message,
+                color = 0xeee657
+            )
+        
         await ctx.send(embed = embed)
 
 bot.run(TOKEN)
