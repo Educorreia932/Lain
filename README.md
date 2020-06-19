@@ -12,15 +12,20 @@ Simply run `start.py` and have a `token.txt` file in the same folder, containing
 
 ## Commands
 
-All the commands must be preceded by the prefix `$` 
+All the commands must be preceded by the prefix `$`.
 
-- **info** - Display information about the bot
 - **cmds** - Lists all commands of the bot
+- **info** - Display information about the bot
+- **joke** - Tells a nerdy joke
 - **stats** - Retrieves statistics about the server
     - **emojis** - Total number of usages of each emoji in messages reactions
     - **messages** - Total number of messages per person
+- **study** - Let's you request, submit and check useful studying resources (this is a teacher bot afterall)
+    - **request [subject] [title] {description}** - Request resources for a certain subject
+    - **submit [subject] [title] {description} [uri]** - Submit resources for a certain subject
+
 - **what [word]** - Get's the definition of a word from Urban Dictionary. You don't need the []
-- **joke** - Tells a nerdy joke
+
 
 ## Contribution
 
