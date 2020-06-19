@@ -125,9 +125,9 @@ async def what(ctx, word):
     try:
         if len(query["list"]) > 0:
             embed = discord.Embed(
-                title="**{}**".format(word.title()),
-                description=query["list"][0]["definition"].replace("[","__").replace("]","__"),
-                color=0xeee657
+                title = "**{}**".format(word.title()),
+                description = query["list"][0]["definition"].replace("[","__").replace("]","__"),
+                color = 0xeee657
             )
 
             await ctx.send(embed=embed)
@@ -146,7 +146,13 @@ async def joke(ctx):
     try:
         query = requests.get("https://sv443.net/jokeapi/v2/joke/Miscellaneous?blacklistFlags=nsfw,religious,political,racist,sexist&type=single")
         query = query.json()
-        await ctx.send(query["joke"])
+
+        embed = discord.Embed(
+            title = "Here's the joke",
+            description = query["joke"],
+            color = 0xeee657
+        )
+        await ctx.send(embed = embed)
     except:
         await ctx.send("I'm not in the mood for jokes today.")
 
