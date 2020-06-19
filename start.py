@@ -331,12 +331,19 @@ async def study(ctx, command, *argv):
         if (len(argv) > 2):
             description = argv[2]
         
-        message = \
-            "**Subject:** " + subject + " " + subjects[subject] + "\n" \
-            "**Title**: " + title
+        message = "**Subject:** " + subject + " " + subjects[subject] + "\n" 
+        message += "**Title**: " + title + "\n" 
         
         if (description != ""):
-            message += "**Description**: " + description
+            message += "**Description**: " + description + "\n" 
+            
+        if (command == "request"):
+            message += "**Request by**: "
+            
+        else:
+            message += "**Submitted by**: "
+        
+        message += "<@" + str(ctx.message.author.id) + ">"
         
         embed = discord.Embed(
                 title = "New " + command.title(),
