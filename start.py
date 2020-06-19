@@ -4,6 +4,7 @@ import random
 import requests
 import time
 import json
+import math
 
 from discord.ext import commands
 
@@ -67,9 +68,15 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
     start_time = time.time()
     
     channel = bot.get_channel(715142746356187195)
-    counter = 1
     
     msg = "Modo incorreto, vai para Campo Alegre rapaz."
+
+    def render_msg_list(array, msg = ""):
+        counter = 1
+        for item in array:
+            msg += str(counter) + "º) " + str(item) + ": " + str(array[item]) + "\n"
+            counter += 1
+        return msg
     
     if mode == "messages":
         users = {}
@@ -85,9 +92,11 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
         sorted_users = sorted(users.items(), key=lambda kv: kv[1], reverse = True)
         users = collections.OrderedDict(sorted_users)
             
-        for user in users:
-            msg += str(counter) + "º) " + user + ": " + str(users[user]) + "\n"
-            counter += 1
+        current_page = 1
+        total_pages = math.ceil(len(users)/50)
+
+        msg = render_msg_list(users, msg)
+        
             
     elif mode == "emojis":
         emojis = {i : 0 for i in bot.emojis}
@@ -105,9 +114,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
         sorted_emojis = sorted(emojis.items(), key=lambda kv: kv[1], reverse = True)
         emojis = collections.OrderedDict(sorted_emojis)
 
-        for emoji in emojis:    
-            msg += str(counter) + "º) " + str(emoji) + " : " + str(emojis[emoji]) + "\n"
-            counter += 1
+        msg = render_msg_list(emojis, msg)
             
     else:
         print("Usage: stats emojis/messages <-time>")
