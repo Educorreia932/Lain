@@ -71,7 +71,7 @@ async def stats(ctx, mode, display_time):
     
     if mode == "messages":
         users = {}
-        msg = "**Number of messages per author:**\n"
+        msg = "**Number of messages per author:**\n\n"
         
         async for message in channel.history(limit = 50000):
             if (message.author.name not in users):
@@ -90,7 +90,7 @@ async def stats(ctx, mode, display_time):
     elif mode == "emojis":
         emojis = {i : 0 for i in bot.emojis}
         
-        msg = "**Number of times that each emoji was used\n**"
+        msg = "**Number of times that each emoji was used\n\n**"
         
         async for message in channel.history(limit = 50000):
             for reaction in message.reactions:
@@ -112,7 +112,12 @@ async def stats(ctx, mode, display_time):
             
     total_time = time.time() - start_time
     
-    await ctx.send(msg[0:1990])
+    embed = discord.Embed(
+        title = "",
+        description = msg[0:1990],
+        color = 0xeee657
+    )
+    await ctx.send(embed = embed)
     
     if (display_time == "-time"):
         await ctx.send("Stats completed in " + str(total_time) + " seconds")
