@@ -57,9 +57,10 @@ async def info(ctx):
 
 
 @bot.command()
-async def stats(ctx, mode, display_time):  
+async def stats(ctx, mode, display_time = 0, limit = 50000 ):  
     print("stats")
-    
+    print("Display_Time: {}\n limit: {}".format(display_time, limit))
+
     await ctx.send("Retrieving stats...")
     
     start_time = time.time()
@@ -73,7 +74,7 @@ async def stats(ctx, mode, display_time):
         users = {}
         msg = "**Number of messages per author:**\n\n"
         
-        async for message in channel.history(limit = 50000):
+        async for message in channel.history(limit = limit):
             if (message.author.name not in users):
                 users[message.author.name] = 1
             
@@ -92,7 +93,7 @@ async def stats(ctx, mode, display_time):
         
         msg = "**Number of times that each emoji was used\n\n**"
         
-        async for message in channel.history(limit = 50000):
+        async for message in channel.history(limit = limit):
             for reaction in message.reactions:
                 for n in range(reaction.count):
                     try:
