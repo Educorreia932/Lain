@@ -133,9 +133,17 @@ async def what(ctx, word):
             await ctx.send(embed=embed)
             
         else:
-            await ctx.send("Sorry, I don't know the meaning of this term.")
+            embed = discord.Embed(
+                title = "Sorry, I don't know the meaning of this term.",
+                color = 0xeee657
+            )
+            await ctx.send(embed = embed)
     except:
-        print("I'm not very well today :c")
+        embed = discord.Embed(
+                title = "I'm not feeling well today, please call the dev :(",
+                color = 0xeee657
+        )
+        await ctx.send(embed = embed)
    
 @bot.command()
 async def iq(ctx):
