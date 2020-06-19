@@ -20,12 +20,12 @@ async def on_ready():
     print('------')
     
 @bot.command()
-async def commands(ctx):
+async def cmds(ctx):
     commands = """
 ** List of Commands **\n 
 All the commands must be preceded by the prefix `$`
 
-- **commands** - Lists all commands of the bot
+- **cmds** - Lists all commands of the bot
 - **info** - Display information about the bot
 - **stats** - Retrieves statistics about the server
     - **emojis** - Total number of usages of each emoji in messages reactions
