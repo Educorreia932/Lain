@@ -139,7 +139,11 @@ async def what(ctx, word):
    
 @bot.command()
 async def iq(ctx):
-    await ctx.send("You have a total IQ of " + str(random.randint(1, 201)))
+    embed = discord.Embed(
+        title = "You have a total IQ of " + str(random.randint(1, 201)),
+        color = 0xeee657
+    )
+    await ctx.send(embed = embed)
    
 @bot.command()
 async def joke(ctx):
