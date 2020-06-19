@@ -172,6 +172,44 @@ async def joke(ctx):
         )
         await ctx.send(embed = embed)
     except:
-        await ctx.send("I'm not in the mood for jokes today.")
+        embed = discord.Embed(
+                title = "I'm not feeling well today, please call the dev :(",
+                color = 0xeee657
+        )
+        await ctx.send(embed = embed)
+
+@bot.command()
+async def excuse(ctx):
+    try:
+        excuses = [
+            "Ahh, I thought it was in my bag, but it looks like I’ve left it at home by accident!",
+            "Forgot my backpack in my Dad's car and he is out of town",
+            "I was too sick, so I couldn't finish the homework",
+            "My cousin died T-T So I was in mourning",
+            "Damn, my dog just ate it!",
+            "My PC crashed and I didn't find another one to use :c",
+            "My backpack was stolen and I left it there",
+            "Homework? I don’t remember getting any homework?",
+            "I didn’t understand the homework, could you explain it to me so I can give it a second go?",
+            "My computer crashed and I didn’t save my work",
+            "My printer stopped working! It couldn't be helped!",
+            "Oh, I think I was absent when the homework was given out…",
+            "I’ve been busy with extra-curricular activities and volunteering work outside of school",
+            "I’ve been so ill over the past few days, so I haven’t been able to do any of my homework",
+            "You didn't give me any homework to do!! I'm telling you!"
+        ]
+        
+        embed = discord.Embed(
+            title = "I'm not with the homework...",
+            description = random.choice(excuses),
+            color = 0xeee657
+        )
+        await ctx.send(embed = embed)
+    except:
+        embed = discord.Embed(
+                title = "I'm not feeling well today, please call the dev :(",
+                color = 0xeee657
+        )
+        await ctx.send(embed = embed)
 
 bot.run(TOKEN)
