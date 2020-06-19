@@ -205,7 +205,7 @@ async def excuse(ctx):
         await ctx.send(embed = embed)
         
 @bot.command()
-async def study(ctx, command, subject, title, description = ""):
+async def study(ctx, command, *argv):    
     if command == "request" or command == "submit":
         subjects = {
                 "Maths": "📐",
@@ -221,7 +221,31 @@ async def study(ctx, command, subject, title, description = ""):
                 "Geography": "🌍" 
             }
         
-        subject = subject.title()
+        subject = argv[0].title()
+        
+        if (subject not in subjects):
+            await ctx.send("That subject is not currently present. Please choose one of the following:")
+            
+            message = ""
+            
+            for subject in subjects:
+                message += subject + " " + subjects[subject] + "\n"
+            
+            embed = discord.Embed(
+                title = "Supported subjects",
+                description = message,
+                color = 0xeee657
+            )
+            
+            await ctx.send(embed = embed)
+            
+            return
+        
+        title = argv[1]
+        description = ""
+        
+        if (len(argv) > 2):
+            description = argv[2]
         
         message = \
             "**Subject:** " + subject + " " + subjects[subject] + "\n" \
