@@ -22,7 +22,6 @@ async def on_ready():
 @bot.command()
 async def cmds(ctx):
     commands = """
-** List of Commands **\n 
 All the commands must be preceded by the prefix `$`
 
 - **cmds** - Lists all commands of the bot
@@ -33,7 +32,13 @@ All the commands must be preceded by the prefix `$`
 - **what [word]** - Get's the definition of a word from Urban Dictionary. You don't need the []
 - **joke** - Tells a nerdy joke
     """
-    await ctx.send(commands)
+
+    embed = discord.Embed(
+        title = "List of Commands",
+        description = commands,
+        color = 0xeee657
+    )
+    await ctx.send(embed = embed)
 
 @bot.command()
 async def info(ctx):
