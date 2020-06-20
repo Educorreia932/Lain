@@ -131,18 +131,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
 
     total_time = time.time() - start_time
 
-    async def show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user):
-
-        def render_msg_list(array, msg = "", page=1, items_per_page=5):
-            subarray = array[ ((current_page * items_per_page) - items_per_page ) : ((current_page * items_per_page) - 1) ]
-            counter = 1
-            if current_page > 1:
-                counter = (current_page * items_per_page) - items_per_page
-            for item in subarray:
-                msg += str(counter) + ". " + str(item[0]) + ": " + str(item[1]) + "\n"
-                counter += 1
-            return msg
-
+    async def show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list):
         msg = render_msg_list(array, msg_title, current_page, items_per_page) 
     
         embed = discord.Embed(
@@ -186,7 +175,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
             embed.add_field(name = 'Page', value = '{}/{}'.format(current_page, total_pages))
 
             # await stats.clear_reactions()
-            await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user)
+            await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list)
         elif '▶️' in str(res.emoji) and current_page < total_pages:
             print('Next page')
             current_page += 1
@@ -200,10 +189,10 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
             embed.add_field(name = 'Page', value = '{}/{}'.format(current_page, total_pages))
 
             # await stats.clear_reactions()
-            await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user)
+            await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list)
     
 
-    await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, ctx.message.author)        
+    await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, ctx.message.author, render_msg_list)        
     
     if (display_time == "-time"):
         await ctx.send("Stats completed in " + str(total_time) + " seconds")
