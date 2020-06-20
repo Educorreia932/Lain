@@ -1,2 +1,1 @@
-web: echo "I don't want a web process"
-service: python start.py
+worker: python start.py
