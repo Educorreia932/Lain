@@ -9,6 +9,8 @@ import asyncio
 from discord.ext import commands
 from pymongo import MongoClient
 
+print("Start")
+
 bot = commands.Bot(command_prefix='$')
 token_file = "token.txt"
 
