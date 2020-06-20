@@ -1,4 +1,3 @@
-import collections
 import discord
 import random
 import requests
@@ -8,6 +7,7 @@ import math
 import asyncio
 
 from discord.ext import commands
+from pymongo import MongoClient
 
 bot = commands.Bot(command_prefix='$')
 token_file = "token.txt"
@@ -70,7 +70,6 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
     
     channel = bot.get_channel(715142746356187195)
     
-    msg = "Modo incorreto, vai para Campo Alegre rapaz."
     msg_title = ""
     current_page = 1
     total_pages = 1
@@ -78,15 +77,17 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
     array = []
     channel = ctx.channel
 
-
     def render_msg_list(array, msg = "", current_page=1, items_per_page=5):
         subarray = array[ ((current_page * items_per_page) - items_per_page ) : ((current_page * items_per_page) - 1) ]
         counter = 1
+        
         if current_page > 1:
             counter = (current_page * items_per_page) - items_per_page
+        
         for item in subarray:
             msg += str(counter) + ". " + str(item[0]) + ": " + str(item[1]) + "\n"
             counter += 1
+        
         return msg
     
     if mode == "messages":
@@ -100,7 +101,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
             else:
                 users[message.author.mention] += 1
             
-        #users
+        # Users
         array = sorted(users.items(), key=lambda kv: kv[1], reverse = True)
             
         current_page = 1
@@ -120,7 +121,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
                     except:
                         continue                        
 
-        #emojis
+        # Emojis
         array = sorted(emojis.items(), key=lambda kv: kv[1], reverse = True)
 
         current_page = 1
@@ -255,26 +256,78 @@ async def excuse(ctx):
         )
         
         await ctx.send(embed = embed)
+     
+subjects = {
+    "Maths": "📐",
+    "Physics": "🌌",
+    "Chemistry": "🧪",
+    "Computers": "🖥️",
+    "Literature": "📚",
+    "Philosophy": "🧠",
+    "Biology": "🧬",
+    "Economics": "💰",
+    "Language": "🗣️",
+    "History": "⚱",
+    "Geography": "🌍" 
+}   
+     
+def add_request(db, title, description, subject, user):
+    request = {
+        "entry": {
+            "title": title,
+            "description": description
+        },
         
+        "subject": {
+            "name": subject
+        },
+        
+        "user": {
+            "name": user
+        }
+    }
+    
+    
+    db.entries.insert_one(request)
+        
+def open_database():
+    credentials = open("database_credentials.txt", "r").read().split("\n")
+    
+    username = credentials[0]
+    password = credentials[1]
+    database_id = credentials[2]
+
+    client = MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0-t1km9.mongodb.net/"+ database_id + "?retryWrites=true&w=majority")
+    return client.server
+    
+def generate_entry_message(command, subject, title, description, author):   
+    message = "**Subject:** " + subject + " " + subjects[subject] + "\n" 
+    message += "**Title**: " + title + "\n" 
+    
+    if (description != ""):
+        message += "**Description**: " + description + "\n" 
+        
+    message += "**Request by**: " if command == "request" else "**Submitted by**: "
+    
+    message += author
+    
+    embed = discord.Embed(
+        title = "New " + command.title(),
+        description = message,
+        color = 0xeee657
+    )
+    
+    return embed
+
 @bot.command()
 async def study(ctx, command, *argv):    
-    if command == "request" or command == "submit":
-        subjects = {
-                "Maths": "📐",
-                "Physics": "🌌",
-                "Chemistry": "🧪",
-                "Computers": "🖥️",
-                "Literature": "📚",
-                "Philosophy": "🧠",
-                "Biology": "🧬",
-                "Economics": "💰",
-                "Language": "🗣️",
-                "History": "⚱",
-                "Geography": "🌍" 
-            }
-        
+    if command == "request" or command == "submit":       
         subject = argv[0].title()
+        title = argv[1]
+        description = "" if len(argv) <= 2 else argv[2]
+        author = ctx.message.author
         
+        #  Invalid subject
         if (subject not in subjects):
             await ctx.send("That subject is not currently present. Please choose one of the following:")
             
@@ -293,32 +346,30 @@ async def study(ctx, command, *argv):
             
             return
         
-        title = argv[1]
-        description = ""
+        # Add in database
+        db = open_database()
         
-        if (len(argv) > 2):
-            description = argv[2]
-        
-        message = "**Subject:** " + subject + " " + subjects[subject] + "\n" 
-        message += "**Title**: " + title + "\n" 
-        
-        if (description != ""):
-            message += "**Description**: " + description + "\n" 
-            
         if (command == "request"):
-            message += "**Request by**: "
+            print("New request added to the database")
+            add_request(db, title, description, subject, author.name)
+        
+        #  Send message
+        await ctx.send(embed = generate_entry_message(command, subject, title, description, author.name))
+
+    elif command == "show":
+        print("Showing requests")
+        
+        db = open_database()
+        
+        await ctx.send("**Pending requests:**")
+        
+        if argv[0] == "requests":
+            for request in db.entries.find():
+                subject = request["subject"]["name"]
+                title = request["entry"]["title"]
+                description = request["entry"]["description"]
+                author = request["user"]["name"]
             
-        else:
-            message += "**Submitted by**: "
-        
-        message += "<@" + str(ctx.message.author.id) + ">"
-        
-        embed = discord.Embed(
-                title = "New " + command.title(),
-                description = message,
-                color = 0xeee657
-            )
-        
-        await ctx.send(embed = embed)
+                await ctx.send(embed = generate_entry_message("request", subject, title, description, author))
 
 bot.run(TOKEN)
