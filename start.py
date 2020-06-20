@@ -79,7 +79,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
     channel = ctx.channel
 
 
-    def render_msg_list(array, msg = "", page=1, items_per_page=5):
+    def render_msg_list(array, msg = "", current_page=1, items_per_page=5):
         subarray = array[ ((current_page * items_per_page) - items_per_page ) : ((current_page * items_per_page) - 1) ]
         counter = 1
         if current_page > 1:
@@ -155,41 +155,20 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
                     return False
                 return True
         try:
-            res, user = await bot.wait_for('reaction_add', check=check_react, timeout=60)
+            res, user = await bot.wait_for('reaction_add', check=check_react, timeout=30)
+            if user != ctx.message.author:
+                pass
+            elif '◀️' in str(res.emoji) and current_page > 1:
+                print('Previous page')
+                current_page -= 1
+                await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list)
+            elif '▶️' in str(res.emoji) and current_page < total_pages:
+                print('Next page')
+                current_page += 1
+                await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list)
         except asyncio.TimeoutError:
-            # return await stats.clear_reactions()
-            pass
-        
-        if user != ctx.message.author:
-            pass
-        elif '◀️' in str(res.emoji) and current_page > 1:
-            print('Previous page')
-            current_page -= 1
-            msg = render_msg_list(array, msg_title, current_page, items_per_page)
-
-            embed = discord.Embed(
-                title = "",
-                description = msg[0:1990],
-                color = 0xeee657
-            )
-            embed.add_field(name = 'Page', value = '{}/{}'.format(current_page, total_pages))
-
-            # await stats.clear_reactions()
-            await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list)
-        elif '▶️' in str(res.emoji) and current_page < total_pages:
-            print('Next page')
-            current_page += 1
-            msg = render_msg_list(array, msg_title, current_page, items_per_page)
-
-            embed = discord.Embed(
-                title = "",
-                description = msg[0:1990],
-                color = 0xeee657
-            )
-            embed.add_field(name = 'Page', value = '{}/{}'.format(current_page, total_pages))
-
-            # await stats.clear_reactions()
-            await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, user, render_msg_list)
+            print("Timeout")
+            await stats.delete()
     
 
     await show_stats(ctx, array, current_page, total_pages, items_per_page, msg_title, ctx.message.author, render_msg_list)        
