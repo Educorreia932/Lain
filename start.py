@@ -64,7 +64,7 @@ async def info(ctx):
 
 
 @bot.command()
-async def stats(ctx, mode, display_time = 0, limit = 50000 ):  
+async def stats(ctx, mode, display_time = 0, limit = 50000, force_update = False ):  
     print("stats")
     print("Display_Time: {}\n limit: {}".format(display_time, limit))
 
@@ -94,20 +94,53 @@ async def stats(ctx, mode, display_time = 0, limit = 50000 ):
         
         return msg
     
-    if mode == "messages":
-        users = {}
-        msg_title = "**Number of messages per author:**\n\n"
-        
-        async for message in channel.history(limit = limit):
-            if (message.author.mention not in users):
-                users[message.author.mention] = 1
-            
+    if mode == "messages":        
+        try:
+            async def get_messages_data(channel, limit):
+                users = {}
+                msg_title = "**Number of messages per author:**\n\n"
+                async for message in channel.history(limit = limit):
+                    if (message.author.mention not in users):
+                        users[message.author.mention] = 1
+
+                    else:
+                        users[message.author.mention] += 1
+
+                # Users
+                array = sorted(users.items(), key=lambda kv: kv[1], reverse = True)
+                return array
+
+            async def save_messages_data(array):
+                try:
+                    with open('./data/messages.json', 'w', encoding='utf-8') as messages_data:
+                        json.dump({
+                            "timestamp": time.time(),
+                            "array": array
+                        }, messages_data)
+                        print("Saving messages data")
+                except:
+                    print("Error when saving messages data")
+            if force_update == False:
+                with open('./data/messages.json', 'r', encoding='utf-8') as messages_data:
+                    print("Messages file found")
+                    messages_data = json.load(messages_data)
+                    ts = time.time()
+                    time_difference = ts - messages_data["timestamp"]
+                    if time_difference <= 86400:
+                        print("Messages file is not obsolet")
+                        array = messages_data["array"]
+                    else: 
+                        print("Message file is obsolet ")
+                        array = await get_messages_data(channel, limit)
+                        await save_messages_data(array)
             else:
-                users[message.author.mention] += 1
-            
-        # Users
-        array = sorted(users.items(), key=lambda kv: kv[1], reverse = True)
-            
+                print("Forcing update")
+                array = await get_messages_data(channel, limit)
+                await save_messages_data(array)
+        except:
+            print("File not found")
+            array = await get_messages_data(channel, limit)
+            await save_messages_data(array)
         current_page = 1
         total_pages = math.ceil(len(array)/items_per_page)
         
