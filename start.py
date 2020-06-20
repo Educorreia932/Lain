@@ -5,17 +5,19 @@ import time
 import json
 import math
 import asyncio
+import os
 
 from discord.ext import commands
 from pymongo import MongoClient
 
-print("Start")
-
 bot = commands.Bot(command_prefix='$')
 token_file = "token.txt"
 
-with open(token_file) as f:
-    TOKEN = f.read()
+try:
+    with open(token_file) as f:
+        TOKEN = f.read()
+except:
+    TOKEN = os.environ.get('TOKEN')
 
 @bot.event
 async def on_ready():
