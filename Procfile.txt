@@ -1,1 +1,1 @@
-web: python start.py
+service: python start.py
