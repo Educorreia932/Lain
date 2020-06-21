@@ -120,6 +120,7 @@ async def stats(ctx, mode, display_time = 0, limit = 50000, force_update = False
                         print("Saving messages data")
                 except:
                     print("Error when saving messages data")
+
             if force_update == False:
                 with open('./data/messages.json', 'r', encoding='utf-8') as messages_data:
                     print("Messages file found")
@@ -146,24 +147,68 @@ async def stats(ctx, mode, display_time = 0, limit = 50000, force_update = False
         
             
     elif mode == "emojis":
-        emojis = {i : 0 for i in bot.emojis}
+        try:
+            async def get_emojis_data(channel, limit):
+                emojis = {i : 0 for i in bot.emojis}
         
-        msg_title = "**Number of times that each emoji was used\n\n**"
+                msg_title = "**Number of times that each emoji was used\n\n**"
         
-        async for message in channel.history(limit = limit):
-            for reaction in message.reactions:
-                for n in range(reaction.count):
-                    try:
-                        emojis[reaction.emoji] += 1
-                    except:
-                        continue                        
+                async for message in channel.history(limit = limit):
+                    for reaction in message.reactions:
+                        for n in range(reaction.count):
+                            try:
+                                emojis[reaction.emoji] += 1
+                            except:
+                                continue                        
 
-        # Emojis
-        array = sorted(emojis.items(), key=lambda kv: kv[1], reverse = True)
+                # Emojis
+                array = sorted(emojis.items(), key=lambda kv: kv[1], reverse = True)
+                return array
+            
+            async def save_emojis_data(array):
+                try:
+                    with open('./data/emojis.json', 'w', encoding="UTF-8") as emojis_data:
+                        subarray = []
+                        for i in range(len(array)):
+                            subarray.append( [array[i][0].id, array[i][1]] )
+                        json.dump({
+                            "timestamp": time.time(),
+                            "array": subarray
+                        }, emojis_data)
+                        print("Saving emojis data")
+                except:
+                    print("Error when saving emojis data")
+            
+            if force_update == False:
+                with open('./data/emojis.json', 'r', encoding="UTF-8") as emojis_data:
+                    print("Emojis file found")
+                    emojis_data = json.load(emojis_data)
+                    ts = time.time()
+                    time_difference = ts - emojis_data["timestamp"]
+                    if time_difference <= 86400:
+                        print("Emojis file is not obsolet")
 
+                        subarray = []
+                        for i in emojis_data["array"]:
+                            subarray.append( ( bot.get_emoji(i[0]), i[1] ) )
+
+                        array = subarray
+                    else: 
+                        print("Emoji file is obsolet ")
+                        array = await get_emojis_data(channel, limit)
+                        await save_emojis_data(array)
+            else:
+                print("Forcing update")
+                array = await get_emojis_data(channel, limit)
+                await save_emojis_data(array)
+
+        except:
+            print("File not found")
+            array = await get_emojis_data(channel, limit)
+            await save_emojis_data(array)
         current_page = 1
         total_pages = math.ceil(len(array)/items_per_page)
-
+      
     else:
         print("Usage: stats emojis/messages <-time>")
 
