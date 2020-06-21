@@ -373,11 +373,16 @@ def add_request(db, title, description, subject, user):
     db.entries.insert_one(request)
         
 def open_database():
-    credentials = open("database_credentials.txt", "r").read().split("\n")
-    
-    username = credentials[0]
-    password = credentials[1]
-    database_id = credentials[2]
+    try:
+        credentials = open("database_credentials.txt", "r").read().split("\n")
+        username = credentials[0]
+        password = credentials[1]
+        database_id = credentials[2]
+        
+    except:
+        username = os.environ.get("DATABASE_USERNAME")
+        password = os.environ.get("DATABASE_PASSWORD")
+        database_id = os.environ.get("DATABASE_NAME")
 
     client = MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0-t1km9.mongodb.net/"+ database_id + "?retryWrites=true&w=majority")
     return client.server
