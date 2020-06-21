@@ -322,7 +322,7 @@ async def joke(ctx):
 async def excuse(ctx):
     try:
         excuses = []
-        with open('excuses.json', 'r', encoding='utf-8') as excuses:
+        with open('./data/excuses.json', 'r', encoding='utf-8') as excuses:
             excuses = json.load(excuses)
         
         embed = discord.Embed(
