@@ -79,7 +79,6 @@ async def stats(ctx, mode, display_time = 0, limit = 50000, force_update = False
     total_pages = 1
     items_per_page = 50
     array = []
-    channel = ctx.channel
 
     def render_msg_list(array, msg = "", current_page=1, items_per_page=5):
         subarray = array[ ((current_page * items_per_page) - items_per_page ) : ((current_page * items_per_page) - 1) ]
@@ -99,13 +98,15 @@ async def stats(ctx, mode, display_time = 0, limit = 50000, force_update = False
             async def get_messages_data(channel, limit):
                 users = {}
                 msg_title = "**Number of messages per author:**\n\n"
+                qnt = 0
                 async for message in channel.history(limit = limit):
+                    qnt+=1
                     if (message.author.mention not in users):
                         users[message.author.mention] = 1
 
                     else:
                         users[message.author.mention] += 1
-
+                print("{} messages in total".format(qnt))
                 # Users
                 array = sorted(users.items(), key=lambda kv: kv[1], reverse = True)
                 return array
