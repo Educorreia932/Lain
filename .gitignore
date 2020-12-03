@@ -9,3 +9,5 @@ mongodbtest.py
 database_credentials.txt
 
 database.py
+
+__pycache__/
