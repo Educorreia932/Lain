@@ -22,17 +22,21 @@ async def ping(ctx):
 
 @bot.command()
 async def stats(ctx, mode):
-    message = "**Emoji Usage Statistics**"
-
+    setup_database()
+    
     if mode == "emoji":
+        message = "**Emoji Usage Statistics\n**"
+
         await ctx.send("Retrieving emoji usage stats... This might take some time")
 
-        usage = await emoji_stats(ctx)
+        usage = await emoji_stats(ctx, bot)
 
         for emoji, count in usage.items():
-            message += f"{emoji} - {count}\n"
+            message += f"<:{emoji[0]}:{emoji[1]}> - {count}\n"
 
     elif mode == "messages":
+        message = "**Message Quantity Statistics\n**"
+
         await ctx.send("Retrieving message quantity stats... This might take some time")
 
         quantity = await message_stats(ctx)
