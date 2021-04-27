@@ -1,20 +1,22 @@
 @startuml
 
 class Emoji {
+    identifier
     name
 }
 
 class EmojiCount {
-    type
     count
 }
 
 class Channel {
-    id
+    identifier
+    last_emoji_update
+    last_message_update
 }
 
 class User {
-    id
+    identifier
     name
 }
 

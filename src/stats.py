@@ -1,4 +1,6 @@
 import re
+import datetime
+
 import discord
 
 from peewee import *
@@ -10,6 +12,8 @@ db = SqliteDatabase('../database/stats.db')
 
 class Channel(Model):
     identifier = IntegerField(primary_key=True)
+    last_emoji_update = DateTimeField(null=True)
+    last_message_update = DateTimeField(null=True)
 
     class Meta:
         database = db
@@ -34,17 +38,19 @@ class User(Model):
 
 class EmojiCount(Model):
     emoji_name = CharField()
-    emoji_identifier = IntegerField()
+    emoji_id = IntegerField()
     channel = ForeignKeyField(Channel)
+    count = IntegerField()
 
     class Meta:
         database = db
+        # primary_key = CompositeKey("emoji_name", "emoji_id", "channel")
 
     @property
     def emoji(self):
         return Emoji.get(
             Emoji.name == self.emoji_name &
-            Emoji.identifier == self.emoji_identifier
+            Emoji.identifier == self.emoji_id
         )
 
 
@@ -59,10 +65,15 @@ class MessageCount(Model):
 
 def add_emoji_count(emoji_id, emoji_name, channel_id, count):
     Emoji.get_or_create(identifier=emoji_id, name=emoji_name)
-    Channel.get_or_create(identifier=channel_id)
 
-    emoji_count = EmojiCount(emoji=emoji_name, channel=channel_id, count=count)
-    emoji_count.save()
+    channel = Channel.get(channel_id)
+    channel.update(last_emoji_update=datetime.datetime.now())
+
+    emoji_count, update = EmojiCount.get_or_create(emoji_name=emoji_name, emoji_id=emoji_id, channel=channel_id,
+                                                   count=count)
+
+    if update:
+        emoji_count.update(count=emoji_count.count + count)
 
 
 db.connect()
@@ -72,10 +83,16 @@ db.create_tables([Emoji, Channel, EmojiCount])
 async def emoji_stats(ctx, bot):
     # channel = ctx.guild.text_channels[0]
     channel = bot.get_channel(826490855111655469)
+    channel_db = Channel.get_or_create(identifier=channel.id)[0]
+    last_update = channel_db.last_emoji_update
+
     usage = {}
 
     async for message in channel.history(limit=100):
         # Message's content emoji
+
+        if last_update is not None and message.created_at < last_update:
+            break
 
         custom_emojis = re.findall(r"<:\w*:\d*>", message.content)
 
