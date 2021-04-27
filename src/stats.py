@@ -81,12 +81,14 @@ async def emoji_stats(ctx, bot):
     # channel = ctx.guild.text_channels[0]
     channel = bot.get_channel(826490855111655469)
     channel_db = Channel.get_or_create(identifier=channel.id)[0]
-    last_update = channel_db.last_emoji_update
+    last_update = datetime.datetime.fromisoformat(channel_db.last_emoji_update)
 
     usage = {}
 
     if last_update is None:
         last_update = channel.created_at
+
+    last_update = last_update.replace(tzinfo=None)
 
     # Iterate over channel's messages
     async for message in channel.history(limit=100, after=last_update):
