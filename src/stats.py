@@ -1,33 +1,63 @@
 import re
 import discord
+
 from peewee import *
 
-db = SqliteDatabase('database/stats.db')
+db = SqliteDatabase('../database/stats.db')
+
 
 # Models
 
-class Emoji(Model):
-    identifier = IntegerField()
-    name = CharField()
-    usage_count = IntegerField()
+class Channel(Model):
+    identifier = IntegerField(primary_key=True)
 
     class Meta:
-        database = db 
+        database = db
+
+
+class Emoji(Model):
+    identifier = IntegerField(primary_key=True)
+    name = CharField()
+
+    class Meta:
+        database = db
+
 
 class User(Model):
-    identifier = IntegerField()
-    message_count = IntegerField()
+    identifier = IntegerField(primary_key=True)
+    name = CharField()
 
     class Meta:
-        database = db 
+        database = db
 
-def add_emoji(id, name, usage_count):
-    emoji = Emoji(identifier=id, name=name, usage_count=usage_count)
-    emoji.save()
 
-def setup_database():
-    db.connect()
-    db.create_tables([Emoji])
+class EmojiCount(Model):
+    emoji = ForeignKeyField(Emoji)
+    channel = ForeignKeyField(Channel)
+    count = IntegerField()
+
+    class Meta:
+        database = db
+
+
+class MessageCount(Model):
+    user = ForeignKeyField(User)
+    channel = ForeignKeyField(Channel)
+    count = IntegerField()
+
+    class Meta:
+        database = db
+
+
+def add_emoji_count(channel, identifier, name, count):
+    emoji = Emoji(identifier=identifier, name=name)
+    emoji_count = EmojiCount(emoji=emoji, channel=channel, count=count)
+    emoji_count.save()
+
+
+db.connect()
+db.create_tables([Emoji, EmojiCount, Channel])
+
 
 async def emoji_stats(ctx, bot):
     # channel = ctx.guild.text_channels[0]
@@ -37,13 +67,13 @@ async def emoji_stats(ctx, bot):
     async for message in channel.history(limit=100):
         # Message's content emoji
 
-        custom_emojis = re.findall(r'<:\w*:\d*>', message.content)
+        custom_emojis = re.findall(r"<:\w*:\d*>", message.content)
 
         for emoji in custom_emojis:
-            emoji = tuple(re.findall(r"(?<=:)\w+", emoji))
+            emoji = tuple(re.findall(r'(?<=:)\w+', emoji))
             name = emoji[0]
-            id = int(emoji[1])
-            emoji = (name, id)
+            identifier = int(emoji[1])
+            emoji = (name, identifier)
 
             if emoji not in usage:
                 usage[emoji] = 1
@@ -64,14 +94,15 @@ async def emoji_stats(ctx, bot):
                     usage[emoji] += reaction.count
 
     for emoji, count in usage.items():
-        add_emoji(emoji[0], emoji[1], count)
+        add_emoji_count(channel.id, emoji[0], emoji[1], count)
 
     return {k: v for k, v in sorted(usage.items(), key=lambda item: item[1], reverse=True)}
+
 
 async def message_stats(ctx):
     channel = ctx.guild.text_channels[0]
     quantity = {}
-    
+
     async for message in channel.history(limit=100000):
         author = message.author.mention
 

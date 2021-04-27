@@ -1,1 +1,2 @@
-﻿discord.py>=1.5.1
+﻿peewee>=3.14.4
+pathlib>=1.0.1

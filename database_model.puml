@@ -1,0 +1,31 @@
+@startuml
+
+class Emoji {
+    identifier
+    name
+}
+
+class EmojiCount {
+    type
+    count
+}
+
+class Channel {
+    identifier
+}
+
+class User {
+    identifier
+    name
+}
+
+class MessageCount {
+   count
+}
+
+Channel "1" -- "*" EmojiCount
+EmojiCount "*" -- "1" Emoji
+Channel "1" -- "*" MessageCount
+MessageCount "*" -- "1" User
+
+@enduml

@@ -1,8 +1,8 @@
-import discord
 import pathlib
 
-from stats import *
 from discord.ext import commands
+
+from stats import *
 
 bot = commands.Bot(command_prefix='(', description='Lain')
 
@@ -11,19 +11,22 @@ TOKEN_LOCATION = f"{pathlib.Path(__file__).parent.absolute()}/../token.txt"
 with open(TOKEN_LOCATION) as token_file:
     TOKEN = token_file.read()
 
-@bot.event  
+
+@bot.event
 async def on_ready():
     print(f"\nDiscord.py Version: {discord.__version__}")
     print(f"Logged in as: {bot.user.name} - {bot.user.id}")
+
 
 @bot.command()
 async def ping(ctx):
     await ctx.send("Pong")
 
+
 @bot.command()
 async def stats(ctx, mode):
-    setup_database()
-    
+    message = "Not a valid mode"
+
     if mode == "emoji":
         message = "**Emoji Usage Statistics\n**"
 
@@ -44,10 +47,8 @@ async def stats(ctx, mode):
         for author, count in quantity.items():
             message += f"{author} - {count}\n"
 
-    else:
-        await ctx.send("Not a valid mode")
-
     await ctx.send(message[:1999])
+
 
 if __name__ == "__main__":
     bot.run(TOKEN)
