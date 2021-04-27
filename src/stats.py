@@ -66,9 +66,6 @@ class MessageCount(Model):
 def add_emoji_count(emoji_id, emoji_name, channel_id, count):
     Emoji.get_or_create(identifier=emoji_id, name=emoji_name)
 
-    channel = Channel.get(channel_id)
-    channel.update(last_emoji_update=datetime.datetime.now())
-
     emoji_count, update = EmojiCount.get_or_create(emoji_name=emoji_name, emoji_id=emoji_id, channel=channel_id,
                                                    count=count)
 
@@ -88,11 +85,12 @@ async def emoji_stats(ctx, bot):
 
     usage = {}
 
-    async for message in channel.history(limit=100):
-        # Message's content emoji
+    if last_update is None:
+        last_update = channel.created_at
 
-        if last_update is not None and message.created_at < last_update:
-            break
+    # Iterate over channel's messages
+    async for message in channel.history(limit=100, after=last_update):
+        # Message's content emoji
 
         custom_emojis = re.findall(r"<:\w*:\d*>", message.content)
 
@@ -123,6 +121,8 @@ async def emoji_stats(ctx, bot):
     for emoji, count in usage.items():
         add_emoji_count(emoji[1], emoji[0], channel.id, count)
 
+    channel_db.update(last_emoji_update=datetime.datetime.now(tz=datetime.timezone.utc)).execute()
+
     return {k: v for k, v in sorted(usage.items(), key=lambda item: item[1], reverse=True)}
 
 
@@ -130,7 +130,7 @@ async def message_stats(ctx):
     channel = ctx.guild.text_channels[0]
     quantity = {}
 
-    async for message in channel.history(limit=100000):
+    async for message in channel.history(limit=None):
         author = message.author.mention
 
         if author not in quantity:
