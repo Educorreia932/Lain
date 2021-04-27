@@ -16,11 +16,12 @@ class Channel(Model):
 
 
 class Emoji(Model):
-    identifier = IntegerField(primary_key=True)
+    identifier = IntegerField()
     name = CharField()
 
     class Meta:
         database = db
+        primary_key = CompositeKey("identifier", "name")
 
 
 class User(Model):
@@ -32,12 +33,19 @@ class User(Model):
 
 
 class EmojiCount(Model):
-    emoji = ForeignKeyField(Emoji)
+    emoji_name = CharField()
+    emoji_identifier = IntegerField()
     channel = ForeignKeyField(Channel)
-    count = IntegerField()
 
     class Meta:
         database = db
+
+    @property
+    def emoji(self):
+        return Emoji.get(
+            Emoji.name == self.emoji_name &
+            Emoji.identifier == self.emoji_identifier
+        )
 
 
 class MessageCount(Model):
@@ -49,14 +57,16 @@ class MessageCount(Model):
         database = db
 
 
-def add_emoji_count(channel, identifier, name, count):
-    emoji = Emoji(identifier=identifier, name=name)
-    emoji_count = EmojiCount(emoji=emoji, channel=channel, count=count)
+def add_emoji_count(emoji_id, emoji_name, channel_id, count):
+    Emoji.get_or_create(identifier=emoji_id, name=emoji_name)
+    Channel.get_or_create(identifier=channel_id)
+
+    emoji_count = EmojiCount(emoji=emoji_name, channel=channel_id, count=count)
     emoji_count.save()
 
 
 db.connect()
-db.create_tables([Emoji, EmojiCount, Channel])
+db.create_tables([Emoji, Channel, EmojiCount])
 
 
 async def emoji_stats(ctx, bot):
@@ -94,7 +104,7 @@ async def emoji_stats(ctx, bot):
                     usage[emoji] += reaction.count
 
     for emoji, count in usage.items():
-        add_emoji_count(channel.id, emoji[0], emoji[1], count)
+        add_emoji_count(emoji[1], emoji[0], channel.id, count)
 
     return {k: v for k, v in sorted(usage.items(), key=lambda item: item[1], reverse=True)}
 

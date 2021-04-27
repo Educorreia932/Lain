@@ -1,7 +1,6 @@
 @startuml
 
 class Emoji {
-    identifier
     name
 }
 
@@ -11,11 +10,11 @@ class EmojiCount {
 }
 
 class Channel {
-    identifier
+    id
 }
 
 class User {
-    identifier
+    id
     name
 }
 
