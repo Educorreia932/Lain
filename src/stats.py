@@ -70,7 +70,19 @@ def add_emoji_count(emoji_id, emoji_name, channel_id, count):
                                                    count=count)
 
     if update:
-        emoji_count.update(count=emoji_count.count + count)
+        emoji_count.update(count=emoji_count.count + count).execute()
+
+
+def get_emoji_count(channel_id):
+    usage = {}
+
+    emoji_count = EmojiCount.select().where(EmojiCount.channel == channel_id)
+
+    for row in emoji_count:
+        emoji = (row.emoji_name, row.emoji_id)
+        usage[emoji] = row.count
+
+    return usage
 
 
 db.connect()
@@ -81,14 +93,16 @@ async def emoji_stats(ctx, bot):
     # channel = ctx.guild.text_channels[0]
     channel = bot.get_channel(826490855111655469)
     channel_db = Channel.get_or_create(identifier=channel.id)[0]
-    last_update = datetime.datetime.fromisoformat(channel_db.last_emoji_update)
 
-    usage = {}
-
-    if last_update is None:
+    if channel_db.last_emoji_update is None:
         last_update = channel.created_at
 
-    last_update = last_update.replace(tzinfo=None)
+    else:
+        last_update = datetime.datetime.fromisoformat(channel_db.last_emoji_update)
+
+    last_update = last_update.replace(tzinfo=None)  # Remove timezone awareness from datetime
+
+    usage = get_emoji_count(channel.id)
 
     # Iterate over channel's messages
     async for message in channel.history(limit=100, after=last_update):
@@ -123,6 +137,7 @@ async def emoji_stats(ctx, bot):
     for emoji, count in usage.items():
         add_emoji_count(emoji[1], emoji[0], channel.id, count)
 
+    # Update channel's last emoji stats update date
     channel_db.update(last_emoji_update=datetime.datetime.now(tz=datetime.timezone.utc)).execute()
 
     return {k: v for k, v in sorted(usage.items(), key=lambda item: item[1], reverse=True)}
