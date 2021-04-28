@@ -31,6 +31,7 @@ class Emoji(Model):
 class User(Model):
     identifier = IntegerField(primary_key=True)
     name = CharField()
+    discriminator = IntegerField()
 
     class Meta:
         database = db
@@ -66,32 +67,58 @@ class MessageCount(Model):
 def add_emoji_count(emoji_id, emoji_name, channel_id, count):
     Emoji.get_or_create(identifier=emoji_id, name=emoji_name)
 
-    emoji_count, created = EmojiCount.get_or_create(emoji_name=emoji_name, emoji_id=emoji_id, channel=channel_id,
-                                                   count=count)
+    emoji_count, created = EmojiCount.get_or_create(
+        emoji_name=emoji_name,
+        emoji_id=emoji_id,
+        channel=channel_id,
+        count=count
+    )
 
     if not created:
         emoji_count.update(count=emoji_count.count + count).execute()
 
 
+def add_message_count(user_name, user_discriminator, user_id, channel_id, count):
+    User.get_or_create(identifier=user_id, name=user_name, discriminator=user_discriminator)
+
+    message_count, created = MessageCount.get_or_create(
+        user_id=user_id,
+        channel=channel_id,
+        count=count
+    )
+
+    if not created:
+        message_count.update(count=message_count.count + count).execute()
+
+
 def get_emoji_count(channel_id):
-    usage = {}
+    emoji_count = {}
+    emoji_count_db = EmojiCount.select().where(EmojiCount.channel == channel_id)
 
-    emoji_count = EmojiCount.select().where(EmojiCount.channel == channel_id)
-
-    for row in emoji_count:
+    for row in emoji_count_db:
         emoji = (row.emoji_name, row.emoji_id)
-        usage[emoji] = row.count
+        emoji_count[emoji] = row.count
 
-    return usage
+    return emoji_count
+
+
+def get_message_count(channel_id):
+    message_count = {}
+    message_count_db = MessageCount.select().where(MessageCount.channel == channel_id)
+
+    for row in message_count_db:
+        user = (row.user.name, row.user.discriminator, row.user.identifier)
+        message_count[user] = row.count
+
+    return message_count
 
 
 db.connect()
-db.create_tables([Emoji, Channel, EmojiCount])
+db.create_tables([Emoji, Channel, EmojiCount, User, MessageCount])
 
 
-async def emoji_stats(ctx, bot):
-    # channel = ctx.guild.text_channels[0]
-    channel = bot.get_channel(826490855111655469)
+async def emoji_stats(ctx):
+    channel = ctx.guild.text_channels[0]
     channel_db = Channel.get_or_create(identifier=channel.id)[0]
 
     if channel_db.last_emoji_update is None:
@@ -105,7 +132,7 @@ async def emoji_stats(ctx, bot):
     usage = get_emoji_count(channel.id)
 
     # Iterate over channel's messages
-    async for message in channel.history(limit=100, after=last_update):
+    async for message in channel.history(limit=None, after=last_update):
         # Message's content emoji
 
         custom_emojis = re.findall(r"<:\w*:\d*>", message.content)
@@ -134,6 +161,7 @@ async def emoji_stats(ctx, bot):
                 else:
                     usage[emoji] += reaction.count
 
+    # Update database
     for emoji, count in usage.items():
         add_emoji_count(emoji[1], emoji[0], channel.id, count)
 
@@ -145,15 +173,32 @@ async def emoji_stats(ctx, bot):
 
 async def message_stats(ctx):
     channel = ctx.guild.text_channels[0]
-    quantity = {}
+    channel_db = Channel.get_or_create(identifier=channel.id)[0]
 
-    async for message in channel.history(limit=None):
-        author = message.author.mention
+    if channel_db.last_message_update is None:
+        last_update = channel.created_at
 
-        if author not in quantity:
-            quantity[author] = 1
+    else:
+        last_update = datetime.datetime.fromisoformat(channel_db.last_message_update)
+
+    last_update = last_update.replace(tzinfo=None)  # Remove timezone awareness from datetime
+
+    message_count = get_message_count(channel.id)
+
+    async for message in channel.history(limit=None, after=last_update):
+        author = (message.author.name, int(message.author.discriminator), message.author.id)
+
+        if author not in message_count:
+            message_count[author] = 1
 
         else:
-            quantity[author] += 1
+            message_count[author] += 1
 
-    return {k: v for k, v in sorted(quantity.items(), key=lambda item: item[1], reverse=True)}
+    # Update database
+    for user, count in message_count.items():
+        add_message_count(user[0], user[1], user[2], channel.id, count)
+
+    # Update channel's last message stats update date
+    channel_db.update(last_message_update=datetime.datetime.now(tz=datetime.timezone.utc)).execute()
+
+    return {k: v for k, v in sorted(message_count.items(), key=lambda item: item[1], reverse=True)}

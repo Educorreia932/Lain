@@ -32,20 +32,22 @@ async def stats(ctx, mode):
 
         await ctx.send("Retrieving emoji usage stats... This might take some time")
 
-        usage = await emoji_stats(ctx, bot)
+        usage = await emoji_stats(ctx)
 
         for emoji, count in usage.items():
             message += f"<:{emoji[0]}:{emoji[1]}> - {count}\n"
 
     elif mode == "messages":
-        message = "**Message Quantity Statistics\n**"
+        message = "**Message Quantity Statistics**\n\n"
 
         await ctx.send("Retrieving message quantity stats... This might take some time")
 
         quantity = await message_stats(ctx)
 
         for author, count in quantity.items():
-            message += f"{author} - {count}\n"
+            message += f"**{author[0]}#{author[1]}** - {count}\n"
+
+        print(message)
 
     await ctx.send(message[:1999])
 
