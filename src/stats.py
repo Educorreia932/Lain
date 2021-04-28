@@ -66,10 +66,10 @@ class MessageCount(Model):
 def add_emoji_count(emoji_id, emoji_name, channel_id, count):
     Emoji.get_or_create(identifier=emoji_id, name=emoji_name)
 
-    emoji_count, update = EmojiCount.get_or_create(emoji_name=emoji_name, emoji_id=emoji_id, channel=channel_id,
+    emoji_count, created = EmojiCount.get_or_create(emoji_name=emoji_name, emoji_id=emoji_id, channel=channel_id,
                                                    count=count)
 
-    if update:
+    if not created:
         emoji_count.update(count=emoji_count.count + count).execute()
 
 
