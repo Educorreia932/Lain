@@ -1,12 +1,11 @@
-import re
 import datetime
-
 import discord
+import os
+import re
 
 from peewee import *
 
-db = SqliteDatabase('../database/stats.db')
-
+db = SqliteDatabase(os.path.join(os.path.dirname(__file__), '../database/stats.db'))
 
 # Models
 
